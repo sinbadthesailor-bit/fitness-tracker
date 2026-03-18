@@ -212,6 +212,31 @@ function createCardioEntry(): CardioEntry {
 }
 
 function createEmptyDay(date: string): DayWorkout {
+  function createDraftDay(date: string): DayWorkout {
+  return {
+    date,
+    notes: "",
+    liftCategory: "Push",
+    liftEntries: [
+      {
+        id: "draft-lift-1",
+        exercise: "Bench Press",
+        equipment: "Barbell",
+        weight: "",
+        reps: "",
+        sets: "",
+      },
+    ],
+    cardioEntries: [
+      {
+        id: "draft-cardio-1",
+        type: "Run",
+        distance: "",
+        time: "",
+      },
+    ],
+  };
+}
   return {
     date,
     notes: "",
@@ -502,7 +527,9 @@ export default function Page() {
 
   const todayKey = getTodayKey();
   const todayWorkoutDone = hasWorkoutLogged(dayWorkouts[todayKey]);
-  const selectedDay = dayWorkouts[selectedDate] ?? createEmptyDay(selectedDate);
+  const selectedDay = useMemo(() => {
+  return dayWorkouts[selectedDate] ?? createDraftDay(selectedDate);
+}, [dayWorkouts, selectedDate]);
   const monthCells = useMemo(() => getMonthMatrix(currentMonth), [currentMonth]);
   const profileWeight = Number(profile.weightKg) || 0;
   const strengthStandards = strengthStandardsBySex[profile.sex];
@@ -639,11 +666,11 @@ export default function Page() {
   }, [percentBase]);
 
   function updateSelectedDay(updater: (day: DayWorkout) => DayWorkout) {
-    setDayWorkouts((prev) => {
-      const current = prev[selectedDate] ?? createEmptyDay(selectedDate);
-      return { ...prev, [selectedDate]: updater(current) };
-    });
-  }
+  setDayWorkouts((prev) => {
+    const current = prev[selectedDate] ?? createDraftDay(selectedDate);
+    return { ...prev, [selectedDate]: updater(current) };
+  });
+}
 
   function changeMonth(direction: number) { setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + direction, 1)); }
   function saveWorkout() { setDayWorkouts((prev) => ({ ...prev, [selectedDate]: prev[selectedDate] ?? createEmptyDay(selectedDate) })); setActiveTab("calendar"); }
